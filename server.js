@@ -4,7 +4,7 @@ var bodyParser = require('body-parser');
 var logger = require('morgan');
 
 // Instancia aplicación
-var app = express();
+var app = module.exports = express();
 var port = process.env.PORT || 80;
 
 //Middleware
