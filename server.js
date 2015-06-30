@@ -1,5 +1,6 @@
 // Dependencias
 var express = require('express');
+var MongoClient = require('mongodb').MongoClient;
 var bodyParser = require('body-parser');
 var logger = require('morgan');
 
@@ -7,19 +8,18 @@ var logger = require('morgan');
 var app = module.exports = express();
 var port = process.env.PORT || 80;
 
-//Middleware
-app.use(bodyParser.json());
-app.use(logger('dev'));
+MongoClient.connect('mongodb://localhost:27017/planetasDB', function(err, db) {
+	if(err) throw err;
 
-var planetas = {};
+	//Middleware
+	app.use(bodyParser.json());
+	app.use(logger('dev'));
 
-// Rutas
-app.get('/', function(req, res) {
-	res.send('Hola mundo');
+	// Rutas
+	var Planetas = require('./routes/planetas');
+	var planetasRouter = new Planetas(db).router;
+	app.use('/planetas', planetasRouter);
+
+	app.listen(port);
+	console.log('Servidor iniciado en el puerto ' + port);
 });
-
-var router = require('./routes/planetas');
-app.use('/planetas', router);
-
-app.listen(port);
-console.log('Servidor iniciado en el puerto ' + port);

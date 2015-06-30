@@ -1,10 +1,15 @@
 var request = require('supertest-as-promised');
 var api = require('../server.js');
 var expect = require('chai').expect;
+var MongoClient = require('mongodb').MongoClient;
 
 request = request(api);
 
 describe('Test de Planetas', function() {
+
+  before(function(done) {
+      MongoClient.connect('mongodb://localhost:27017/planetasDB', done);
+  })
 
   describe('POST /planetas', function() {
 
@@ -37,7 +42,7 @@ describe('Test de Planetas', function() {
 
           //Propiedades
           expect(planeta).to.have.property('nombre', 'Mercurio');
-          expect(planeta).to.have.property('id');
+          expect(planeta).to.have.property('_id');
           done(err);
       });
 
@@ -110,7 +115,7 @@ describe('Test de Planetas', function() {
           }
         };
 
-        id = res.body.planeta.id;
+        id = res.body.planeta._id;
 
         return request.put('/planetas/' + id)
                  .set('Accept', 'application/json')
@@ -127,7 +132,7 @@ describe('Test de Planetas', function() {
           planeta = body.planeta;
 
           // Propiedades
-          expect(planeta).to.have.property('id', id);
+          expect(planeta).to.have.property('_id', id);
           expect(planeta).to.have.property('nombre', 'Venus');
 
           done();
@@ -154,23 +159,14 @@ describe('Test de Planetas', function() {
           .expect('Content-Type', /application\/json/)
           .then(function deletePlaneta(res) {
 
-          id = res.body.planeta.id;
+          id = res.body.planeta._id;
 
           return request.delete('/planetas/' + id)
                    .set('Accept', 'application/json')
                    .send()
-                   .expect(200)
-                   .expect('Content-Type', /application\/json/);
+                   .expect(204);
           }, done)
           .then(function assertions(res) {
-            var body = res.body;
-            console.log('GET body', body);
-            // Planeta no existe
-            expect(body).to.have.property('planetas');
-            planetas = body.planetas;
-
-            expect(planetas).to.not.have.property(id);
-
             done();
           }, done);
 
